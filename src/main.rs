@@ -8,6 +8,8 @@ use serenity::{
     Client,
 };
 use tracing::{error, info, instrument};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Registry};
+use tracing_tree::HierarchicalLayer;
 
 type Error = anyhow::Error;
 
@@ -28,7 +30,15 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    tracing_subscriber::fmt::init();
+    // Fancy tree-structured tracing output
+    Registry::default()
+        .with(EnvFilter::from_default_env())
+        .with(
+            HierarchicalLayer::new(2)
+                .with_targets(true)
+                .with_bracketed_fields(true),
+        )
+        .init();
 
     // Get the token from the environment
     let discord_token = std::env::var("DISCORD_TOKEN").context("DISCORD_TOKEN not found")?;

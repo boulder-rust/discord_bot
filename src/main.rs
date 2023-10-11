@@ -3,8 +3,9 @@ use serenity::{
     async_trait,
     client::Context as SerenityContext,
     framework::StandardFramework,
-    model::prelude::{Ready, ResumedEvent},
+    model::prelude::{Message, Ready, ResumedEvent},
     prelude::{EventHandler, GatewayIntents},
+    utils::MessageBuilder,
     Client,
 };
 use tracing::{error, info, instrument};
@@ -25,6 +26,21 @@ impl EventHandler for Handler {
     #[instrument(skip_all)]
     async fn resume(&self, _ctx: SerenityContext, _resumed: ResumedEvent) {
         info!("Resumed");
+    }
+
+    #[instrument(skip(self, ctx))]
+    async fn message(&self, ctx: SerenityContext, msg: Message) {
+        if msg.mentions.iter().any(|u| u.name == "RoboFerris") {
+            let author = msg.author;
+            info!(%author, "bot was mentioned");
+            let response = MessageBuilder::new()
+                .push("Beep boop to you, ")
+                .mention(&author)
+                .build();
+            if let Err(err) = msg.channel_id.say(ctx.http, response).await {
+                error!(%err, "couldn't send reply");
+            }
+        }
     }
 }
 
@@ -55,6 +71,7 @@ async fn main() -> Result<(), Error> {
 
     let mut client = Client::builder(&discord_token, intents)
         .framework(framework)
+        .event_handler(Handler)
         .await
         .context("couldn't create Discord client")?;
 

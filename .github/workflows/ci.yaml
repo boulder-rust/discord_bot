@@ -27,8 +27,9 @@ jobs:
     name: "Build and push container image"
     runs-on: ubuntu-latest
     env:
-      REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}
+      REGISTRY_URL: ghcr.io
+      IMAGE_NAME: "${{ github.repository }}:latest"
+      CREDENTIALS: "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
     permissions:
       contents: read
       packages: write
@@ -45,4 +46,4 @@ jobs:
         name: boulder-rust
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
     - name: "Build and push container"
-      run: nix develop -c skopeo copy --insecure-policy --dest-creds "${{github.actor}}:${{secrets.GITHUB_TOKEN}}" docker-archive://$(nix build .#packages.x86_64-linux.container) "docker://${{env.REGISTRY}}/discord-bot:latest"
+      run: nix develop -c scripts/push-container.sh ${{ env.CREDENTIALS }} ${{ env.REGISTRY_URL }} ${{ env.IMAGE_NAME }}

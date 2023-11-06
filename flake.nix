@@ -22,6 +22,7 @@
           nativeBuildInputs = with pkgs; [
             rustc
             cargo
+            cachix
           ];
           
           buildInputs = with pkgs; [
@@ -41,6 +42,10 @@
           inputsFrom = [
             self.packages.${system}.default
           ];
+
+          shellHoook = ''
+            source .env;
+          '';
         };
       });
 }

@@ -7,6 +7,7 @@ on:
       - "main"
 jobs:
   check:
+    name: "Build and run tests"
     runs-on: ubuntu-latest
     steps:
     - name: "Checkout"
@@ -22,8 +23,15 @@ jobs:
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
     - name: "Run checks"
       run: nix flake check
-  build:
+  build-container:
+    name: "Build and push container image"
     runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+    permissions:
+      contents: read
+      packages: write
     steps:
     - name: "Checkout"
       uses: actions/checkout@v3
@@ -36,5 +44,5 @@ jobs:
       with:
         name: boulder-rust
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-    - name: "Build with Nix"
-      run: nix build
+    - name: "Build and push container"
+      run: nix develop -c skopeo copy --insecure-policy --dest-creds "${{github.actor}}:${{secrets.GITHUB_TOKEN}}" docker-archive://$(nix build .#packages.x86_64-linux.container) "docker://${{env.REGISTRY}}/discord-bot:latest"

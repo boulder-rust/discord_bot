@@ -70,9 +70,16 @@
           });
         };
         packages.default = discordBot;
+        packages.container = pkgs.dockerTools.buildLayeredImage {
+            name = "discord-bot";
+            config = {
+              Cmd = [ "${discordBot}/bin/discord-bot" ];
+            };
+        };
         devShells.default = craneLib.devShell {
           checks = self.checks.${system};
           packages = with pkgs; [
+            skopeo
             cachix
           ];
         };

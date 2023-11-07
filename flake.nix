@@ -73,7 +73,7 @@
         packages.container = pkgs.dockerTools.buildLayeredImage {
             name = "discord-bot";
             config = {
-              Cmd = [ "${discordBot}/bin/discord-bot" ];
+              Cmd = [ "${discordBot}/bin/discord_bot" ];
             };
         };
         devShells.default = craneLib.devShell {

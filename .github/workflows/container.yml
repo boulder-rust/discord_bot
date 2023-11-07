@@ -17,9 +17,9 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }} && ${{ github.event.pull_request.merged }}
     runs-on: ubuntu-latest
     env:
-      REGISTRY_URL: ghcr.io
+      REGISTRY_URL: "${{ secrets.CONTAINER_REGISTRY_URL }}"
       IMAGE_NAME: "${{ github.repository }}:latest"
-      CREDENTIALS: "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
+      CREDENTIALS: "${{ secrets.DIGITALOCEAN_AUTH_TOKEN }}:${{ secrets.DIGITALOCEAN_AUTH_TOKEN }}"
     permissions:
       contents: read
       packages: write

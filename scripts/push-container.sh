@@ -7,6 +7,7 @@ REGISTRY_URL="$1"; shift
 IMAGE_NAME="$1";
 
 nix develop -c skopeo copy \
+    --debug \
     --dest-creds "$CREDENTIALS" \
     "docker-archive://$(nix build .#container --no-link --print-out-paths --no-warn-dirty)" \
     "docker://$REGISTRY_URL/$IMAGE_NAME"

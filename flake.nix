@@ -81,7 +81,13 @@
           packages = with pkgs; [
             skopeo
             cachix
+            just
           ];
+          # Bring in the "rust-src" component so we can set RUST_SRC_PATH, otherwise
+          # rust-analyzer will complain about not being able to locate sysroot or something.
+          RUST_SRC_PATH = "${pkgs.rust-bin.stable.latest.default.override {
+              extensions = [ "rust-src" ];
+          }}/lib/rustlib/src/rust/library";
         };
       });
 }

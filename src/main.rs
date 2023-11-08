@@ -5,17 +5,20 @@ use serenity::{
     framework::StandardFramework,
     model::prelude::{Message, Ready, ResumedEvent},
     prelude::{EventHandler, GatewayIntents},
-    utils::MessageBuilder,
     Client,
 };
-use tracing::{error, info, instrument};
+use tracing::{debug, error, info, instrument};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Registry};
 use tracing_tree::HierarchicalLayer;
+
+mod commands;
 
 type Error = anyhow::Error;
 
 struct Handler;
 
+// If you want to respond to specific events, fill out an implementation for one of the methods on
+// serenity::EventHandler here.
 #[async_trait]
 impl EventHandler for Handler {
     #[instrument(skip_all)]
@@ -28,17 +31,32 @@ impl EventHandler for Handler {
         info!("Resumed");
     }
 
-    #[instrument(skip(self, ctx))]
+    #[instrument(
+        skip_all,
+        fields(
+            msg.id = msg.id.0,
+            msg.channel.id = msg.channel_id.0,
+            msg.author = msg.author.name
+        ))]
     async fn message(&self, ctx: SerenityContext, msg: Message) {
-        if msg.mentions.iter().any(|u| u.name == "RoboFerris") {
-            let author = msg.author;
-            info!(%author, "bot was mentioned");
-            let response = MessageBuilder::new()
-                .push("Beep boop to you, ")
-                .mention(&author)
-                .build();
-            if let Err(err) = msg.channel_id.say(ctx.http, response).await {
-                error!(%err, "couldn't send reply");
+        if msg.content.starts_with('!') {
+            debug!("dispatching a named command");
+            if let Err(err) =
+                commands::named_commands::handle_named_command(ctx.clone(), msg.clone()).await
+            {
+                error!(%err, "couldn't execute named command");
+            }
+        } else if msg.content.starts_with('~') {
+            debug!("dispatching an implicit command");
+            if let Err(err) =
+                commands::implicit_commands::handle_implicit_command(ctx.clone(), msg.clone()).await
+            {
+                error!(%err, "couldn't execute implicit command");
+            }
+        } else {
+            debug!("responding to generic message event");
+            if let Err(err) = commands::background_commands::handle_message_event(ctx, msg).await {
+                error!(%err, "couldn't response to message event");
             }
         }
     }

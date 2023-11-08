@@ -4,8 +4,12 @@ use serenity::{
     client::Context as SerenityContext,
     framework::StandardFramework,
     model::prelude::{Message, Ready, ResumedEvent},
-    prelude::{EventHandler, GatewayIntents},
+    prelude::{EventHandler, GatewayIntents, TypeMapKey},
     Client,
+};
+use sqlx::{
+    postgres::{PgConnectOptions, PgPoolOptions},
+    Pool, Postgres,
 };
 use tracing::{debug, error, info, instrument};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Registry};
@@ -14,6 +18,12 @@ use tracing_tree::HierarchicalLayer;
 mod commands;
 
 type Error = anyhow::Error;
+
+/// A dummy struct that will be used to access the global database connection pool
+struct DbConnection;
+impl TypeMapKey for DbConnection {
+    type Value = Pool<Postgres>;
+}
 
 struct Handler;
 
@@ -77,6 +87,14 @@ async fn main() -> Result<(), Error> {
     // Get the token from the environment
     let discord_token = std::env::var("DISCORD_TOKEN").context("DISCORD_TOKEN not found")?;
 
+    // Connect to the database.
+    // Note that PgConnectOptions reads values from the environment even though
+    // we don't pass it any arguments here.
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect_with(PgConnectOptions::new())
+        .await?;
+
     // Set up the bot framework and allow it to recognize commands as messages
     // starting with a few different characters.
     let framework = StandardFramework::new().configure(|c| c.prefixes(["!", "~", ">"]));
@@ -90,6 +108,7 @@ async fn main() -> Result<(), Error> {
     let mut client = Client::builder(&discord_token, intents)
         .framework(framework)
         .event_handler(Handler)
+        .type_map_insert::<DbConnection>(pool) // this is where we add the database connection
         .await
         .context("couldn't create Discord client")?;
 

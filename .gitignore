@@ -1,3 +1,5 @@
 /target
 .env
 result
+postgres
+postgres_data

@@ -82,12 +82,32 @@
             skopeo
             cachix
             just
+            postgresql
           ];
           # Bring in the "rust-src" component so we can set RUST_SRC_PATH, otherwise
           # rust-analyzer will complain about not being able to locate sysroot or something.
           RUST_SRC_PATH = "${pkgs.rust-bin.stable.latest.default.override {
               extensions = [ "rust-src" ];
           }}/lib/rustlib/src/rust/library";
+          shellHook = ''
+            # Postgres environment variables
+            export PGUSER="$USER"
+            export PGDATA=$PWD/postgres_data
+            export PGHOST=$PWD/postgres
+            export PGPORT=6543
+            export LOG_PATH=$PGHOST/LOG
+            export PGDATABASE=bot_db
+            export DATABASE_URL="postgresql:///$PGDATABASE?host=$PGHOST&port=$PGPORT"
+            mkdir -p $PGHOST
+            if [ ! -d $PGDATA ]; then
+              echo 'Initializing postgresql database...'
+              initdb $PGDATA --username $PGUSER -A md5 --pwfile=<(echo $PGPASS) --auth=trust
+              echo "listen_addresses='*'" >> $PGDATA/postgresql.conf
+              echo "unix_socket_directories='$PGHOST'" >> $PGDATA/postgresql.conf
+              echo "unix_socket_permissions=0700" >> $PGDATA/postgresql.conf
+            fi
+            chmod o-rwx $PGDATA
+          '';
         };
       });
 }

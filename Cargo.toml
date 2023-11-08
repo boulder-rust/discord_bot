@@ -19,4 +19,8 @@ serenity = { version = "0.11", features = [
 ] }
 anyhow = "1"
 tracing-tree = "0.2.5"
-sqlx = { version = "0.7.2", features = ["runtime-tokio-rustls"] }
+sqlx = { version = "0.7.2", features = [
+    "runtime-tokio",
+    "tls-rustls",
+    "postgres",
+] }

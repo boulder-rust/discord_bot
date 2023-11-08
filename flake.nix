@@ -83,6 +83,8 @@
             cachix
             just
             postgresql
+            cargo-watch
+            hivemind
           ];
           # Bring in the "rust-src" component so we can set RUST_SRC_PATH, otherwise
           # rust-analyzer will complain about not being able to locate sysroot or something.

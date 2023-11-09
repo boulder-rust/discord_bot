@@ -30,11 +30,15 @@ async fn bot_was_mentioned(ctx: SerenityContext, msg: Message) -> Result<(), Err
 }
 
 async fn carter_is_cool(ctx: SerenityContext, msg: Message) -> Result<(), Error> {
-    if msg.mentions.iter().any( |u| u.name == "CarterJ" || u.name == "minichar") {
+    if msg
+        .mentions
+        .iter()
+        .any(|u| u.name == "CarterJ" || u.name == "minichar")
+    {
         info!("CarterJ was mentioned");
         let response = MessageBuilder::new()
-        .push("Man that guy is so cool...")
-        .build();
+            .push("Man that guy is so cool...")
+            .build();
         let res = msg.channel_id.say(ctx.http, response).await;
         if let Err(err) = res {
             error!(%err, "Carter ain't that cool apparently");

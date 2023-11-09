@@ -7,7 +7,7 @@ use tracing::error;
 pub async fn handle_named_command(ctx: SerenityContext, msg: Message) -> Result<(), Error> {
     // Call each command in sequence here.
     help(ctx.clone(), msg.clone()).await?;
-    todo!()
+    Ok(())
 }
 
 async fn help(ctx: SerenityContext, msg: Message) -> Result<(), Error> {

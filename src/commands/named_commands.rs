@@ -1,7 +1,9 @@
 //! This module dispatches on named commands, e.g. `!mycmd arg1 arg2`.
 
 use super::Error;
-use serenity::{model::prelude::Message, prelude::Context as SerenityContext, utils::MessageBuilder};
+use serenity::{
+    model::prelude::Message, prelude::Context as SerenityContext, utils::MessageBuilder,
+};
 use tracing::error;
 
 pub async fn handle_named_command(ctx: SerenityContext, msg: Message) -> Result<(), Error> {

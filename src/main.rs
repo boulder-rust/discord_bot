@@ -1,9 +1,10 @@
 use anyhow::Context;
+use commands::background_commands;
 use serenity::{
     async_trait,
     client::Context as SerenityContext,
     framework::StandardFramework,
-    model::prelude::{Message, Ready, ResumedEvent},
+    model::prelude::{Member, Message, Ready, ResumedEvent},
     prelude::{EventHandler, GatewayIntents, TypeMapKey},
     Client,
 };
@@ -69,6 +70,13 @@ impl EventHandler for Handler {
                 error!(%err, "couldn't response to message event");
             }
         }
+    }
+
+    async fn guild_member_addition(&self, ctx: SerenityContext, member: Member) {
+        info!(new_member = member.user.name, "new member joined");
+        background_commands::greet_new_user(ctx, member)
+            .await
+            .unwrap();
     }
 }
 

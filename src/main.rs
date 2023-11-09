@@ -1,4 +1,5 @@
 use anyhow::Context;
+use commands::background_commands;
 use serenity::{
     async_trait,
     client::Context as SerenityContext,
@@ -72,7 +73,10 @@ impl EventHandler for Handler {
     }
 
     async fn guild_member_addition(&self, ctx: SerenityContext, member: Member) {
-        todo!()
+        info!(new_member = member.user.name, "new member joined");
+        background_commands::greet_new_user(ctx, member)
+            .await
+            .unwrap();
     }
 }
 

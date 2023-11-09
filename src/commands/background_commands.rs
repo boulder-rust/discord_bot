@@ -49,8 +49,7 @@ async fn carter_is_cool(ctx: SerenityContext, msg: Message) -> Result<(), Error>
     Ok(())
 }
 
-async fn greet_new_user(ctx: SerenityContext, member: Member) -> Result<(), Error> {
-    info!(new_member = member.user.name, "new member joined");
+pub async fn greet_new_user(ctx: SerenityContext, member: Member) -> Result<(), Error> {
     let general_channel_id = super::general_channel(&ctx, member.guild_id)?;
     let response = MessageBuilder::new()
         .push("Hey, ")

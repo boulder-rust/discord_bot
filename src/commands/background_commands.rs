@@ -4,7 +4,9 @@
 
 use super::Error;
 use serenity::{
-    model::prelude::Message, prelude::Context as SerenityContext, utils::MessageBuilder,
+    model::prelude::{Member, Message},
+    prelude::Context as SerenityContext,
+    utils::MessageBuilder,
 };
 use tracing::{error, info};
 
@@ -43,6 +45,21 @@ async fn carter_is_cool(ctx: SerenityContext, msg: Message) -> Result<(), Error>
         if let Err(err) = res {
             error!(%err, "Carter ain't that cool apparently");
         }
+    }
+    Ok(())
+}
+
+async fn greet_new_user(ctx: SerenityContext, member: Member) -> Result<(), Error> {
+    info!(new_member = member.user.name, "new member joined");
+    let general_channel_id = super::general_channel(&ctx, member.guild_id)?;
+    let response = MessageBuilder::new()
+        .push("Hey, ")
+        .mention(&member.user)
+        .push("! Welcome to the server!")
+        .channel(general_channel_id)
+        .build();
+    if let Err(err) = general_channel_id.say(ctx.http, response).await {
+        error!(%err, "couldn't send reply");
     }
     Ok(())
 }

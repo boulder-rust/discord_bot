@@ -12,6 +12,7 @@ use tracing::{error, info};
 
 pub async fn handle_message_event(ctx: SerenityContext, msg: Message) -> Result<(), Error> {
     bot_was_mentioned(ctx.clone(), msg.clone()).await?;
+    cpt_jack_sparrow_was_dishonored(ctx.clone(), msg.clone()).await?;
     carter_is_cool(ctx, msg).await?;
     Ok(())
 }
@@ -24,6 +25,20 @@ async fn bot_was_mentioned(ctx: SerenityContext, msg: Message) -> Result<(), Err
             .push("Beep boop to you, ")
             .mention(&author)
             .build();
+        if let Err(err) = msg.channel_id.say(ctx.http, response).await {
+            error!(%err, "couldn't send reply");
+        }
+    }
+    Ok(())
+}
+
+async fn cpt_jack_sparrow_was_dishonored(ctx: SerenityContext, msg: Message) -> Result<(), Error> {
+    let raw_content = msg.content.replace(&['*', '_'][..], "");
+    if raw_content.contains("Jack Sparrow") & !raw_content.contains("Captain Jack Sparrow") {
+        let response = MessageBuilder::new()
+            .push("*Captain* Jack Sparrow")
+            .build();
+
         if let Err(err) = msg.channel_id.say(ctx.http, response).await {
             error!(%err, "couldn't send reply");
         }

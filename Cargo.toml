@@ -24,3 +24,6 @@ sqlx = { version = "0.7.2", features = [
     "tls-rustls",
     "postgres",
 ] }
+reqwest = "0.11"
+xmltree = "0.10"
+html-escape = "0.2"
